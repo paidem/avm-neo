@@ -1,10 +1,20 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from contextlib import asynccontextmanager
+
 from app.config import settings
+from app.database import init_db
 from app.routers import auth, browse, media, thumbnails, files
 
-app = FastAPI(title="Action Video Manager", version="2.0.0")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    init_db()
+    yield
+
+
+app = FastAPI(title="Action Video Manager", version="2.0.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
