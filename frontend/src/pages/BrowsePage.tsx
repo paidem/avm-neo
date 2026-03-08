@@ -7,6 +7,7 @@ import Breadcrumbs from '../components/layout/Breadcrumbs';
 import FolderNavigation from '../components/browser/FolderNavigation';
 import FileList from '../components/browser/FileList';
 import MediaPreview from '../components/player/MediaPreview';
+import Spinner from '../components/layout/Spinner';
 import styles from './BrowsePage.module.css';
 
 export default function BrowsePage() {
@@ -74,7 +75,7 @@ export default function BrowsePage() {
   };
 
   if (loading) {
-    return <div className={styles.loading}>Loading...</div>;
+    return <div className={styles.loading}><Spinner text="Loading files..." /></div>;
   }
 
   if (error) {

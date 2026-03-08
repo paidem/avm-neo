@@ -1,4 +1,5 @@
 import os
+import threading
 from pathlib import Path
 
 from fastapi import FastAPI
@@ -11,11 +12,15 @@ from contextlib import asynccontextmanager
 from app.config import settings
 from app.database import init_db
 from app.routers import auth, browse, media, thumbnails, files, bookmarks
+from app.services.thumbnails import generate_all_thumbnails
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()
+    # Generate thumbnails in background thread so startup isn't blocked
+    thread = threading.Thread(target=generate_all_thumbnails, daemon=True)
+    thread.start()
     yield
 
 

@@ -4,6 +4,7 @@ import { Bookmark, Play, Clock, Tag, Trash2, Search, Pencil, Check, X } from 'lu
 import { fetchBookmarks, deleteBookmark, updateBookmark, searchTags } from '../api/bookmarks';
 import TagInput from '../components/bookmarks/TagInput';
 import type { Bookmark as BookmarkType, Tag as TagType } from '../types/api';
+import Spinner from '../components/layout/Spinner';
 import styles from './BookmarksPage.module.css';
 
 export default function BookmarksPage() {
@@ -121,7 +122,7 @@ export default function BookmarksPage() {
           <span className={styles.count}>{bookmarks.length} bookmark{bookmarks.length !== 1 ? 's' : ''}</span>
         </div>
 
-        {loading && <div className={styles.loading}>Loading...</div>}
+        {loading && <Spinner text="Loading bookmarks..." />}
         {error && <div className={styles.error}>{error}</div>}
 
         {!loading && bookmarks.length === 0 && (
