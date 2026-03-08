@@ -57,8 +57,16 @@
 }
 
 .name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-weight: 500;
   font-size: 0.875rem;
+}
+
+.bookmarkIcon {
+  color: var(--accent);
+  flex-shrink: 0;
 }
 
 .meta {

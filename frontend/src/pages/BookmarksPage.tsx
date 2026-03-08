@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bookmark, Play, Clock, Tag, Trash2, Search } from 'lucide-react';
-import { fetchBookmarks, deleteBookmark, searchTags } from '../api/bookmarks';
+import { Bookmark, Play, Clock, Tag, Trash2, Search, Pencil, Check, X } from 'lucide-react';
+import { fetchBookmarks, deleteBookmark, updateBookmark, searchTags } from '../api/bookmarks';
+import TagInput from '../components/bookmarks/TagInput';
 import type { Bookmark as BookmarkType, Tag as TagType } from '../types/api';
 import styles from './BookmarksPage.module.css';
 
@@ -11,10 +12,15 @@ export default function BookmarksPage() {
   const [error, setError] = useState<string | null>(null);
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [allTags, setAllTags] = useState<TagType[]>([]);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editDesc, setEditDesc] = useState('');
+  const [editTags, setEditTags] = useState<string[]>([]);
   const navigate = useNavigate();
 
+  const refreshTags = () => searchTags('').then(setAllTags).catch(() => {});
+
   useEffect(() => {
-    searchTags('').then(setAllTags).catch(() => {});
+    refreshTags();
   }, []);
 
   useEffect(() => {
@@ -36,6 +42,32 @@ export default function BookmarksPage() {
     try {
       await deleteBookmark(id);
       setBookmarks((prev) => prev.filter((b) => b.id !== id));
+      refreshTags();
+    } catch (e: any) {
+      setError(e.message);
+    }
+  };
+
+  const startEdit = (b: BookmarkType) => {
+    setEditingId(b.id);
+    setEditDesc(b.description);
+    setEditTags(b.tags.map((t) => t.name));
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+  };
+
+  const saveEdit = async () => {
+    if (editingId === null) return;
+    try {
+      const updated = await updateBookmark(editingId, {
+        description: editDesc.trim(),
+        tags: editTags,
+      });
+      setBookmarks((prev) => prev.map((b) => (b.id === editingId ? updated : b)));
+      setEditingId(null);
+      refreshTags();
     } catch (e: any) {
       setError(e.message);
     }
@@ -102,46 +134,81 @@ export default function BookmarksPage() {
         <div className={styles.grid}>
           {bookmarks.map((b) => (
             <div key={b.id} className={styles.card}>
-              <div className={styles.cardHeader}>
-                <p className={styles.description}>{b.description}</p>
-                <button
-                  className={styles.deleteBtn}
-                  onClick={() => handleDelete(b.id)}
-                  title="Delete bookmark"
-                >
-                  <Trash2 size={14} />
-                </button>
-              </div>
-              <div className={styles.cardMeta}>
-                <span className={styles.metaItem}>
-                  <Play size={13} />
-                  {b.video_path.split('/').pop()}
-                </span>
-                <span className={styles.metaItem}>
-                  <Clock size={13} />
-                  {formatTime(b.position_seconds)}
-                </span>
-              </div>
-              {b.tags.length > 0 && (
-                <div className={styles.cardTags}>
-                  {b.tags.map((t) => (
-                    <span
-                      key={t.id}
-                      className={styles.tagChip}
-                      onClick={() => setActiveTag(t.name)}
-                    >
-                      {t.name}
+              {editingId === b.id ? (
+                <>
+                  <div className={styles.editField}>
+                    <textarea
+                      value={editDesc}
+                      onChange={(e) => setEditDesc(e.target.value)}
+                      rows={2}
+                      autoFocus
+                    />
+                  </div>
+                  <div className={styles.editField}>
+                    <TagInput selectedTags={editTags} onChange={setEditTags} />
+                  </div>
+                  <div className={styles.editActions}>
+                    <button className={styles.saveBtn} onClick={saveEdit}>
+                      <Check size={14} /> Save
+                    </button>
+                    <button className={styles.cancelBtn} onClick={cancelEdit}>
+                      <X size={14} /> Cancel
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className={styles.cardHeader}>
+                    <p className={styles.description}>{b.description}</p>
+                    <div className={styles.cardActions}>
+                      <button
+                        className={styles.editBtn}
+                        onClick={() => startEdit(b)}
+                        title="Edit bookmark"
+                      >
+                        <Pencil size={14} />
+                      </button>
+                      <button
+                        className={styles.deleteBtn}
+                        onClick={() => handleDelete(b.id)}
+                        title="Delete bookmark"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </div>
+                  <div className={styles.cardMeta}>
+                    <span className={styles.metaItem}>
+                      <Play size={13} />
+                      {b.video_path.split('/').pop()}
                     </span>
-                  ))}
-                </div>
+                    <span className={styles.metaItem}>
+                      <Clock size={13} />
+                      {formatTime(b.position_seconds)}
+                    </span>
+                  </div>
+                  {b.tags.length > 0 && (
+                    <div className={styles.cardTags}>
+                      {b.tags.map((t) => (
+                        <span
+                          key={t.id}
+                          className={styles.tagChip}
+                          onClick={() => setActiveTag(t.name)}
+                        >
+                          {t.name}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  <div className={styles.cardFooter}>
+                    <span className={styles.date}>{formatDate(b.created_at)}</span>
+                    <button className={styles.playBtn} onClick={() => handleNavigate(b)}>
+                      <Play size={14} />
+                      Go to video
+                    </button>
+                  </div>
+                </>
               )}
-              <div className={styles.cardFooter}>
-                <span className={styles.date}>{formatDate(b.created_at)}</span>
-                <button className={styles.playBtn} onClick={() => handleNavigate(b)}>
-                  <Play size={14} />
-                  Go to video
-                </button>
-              </div>
             </div>
           ))}
         </div>

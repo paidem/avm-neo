@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import {
   Folder, Film, Image, Music, FileText,
-  Play, ExternalLink, Download, Pencil, Trash2,
+  Play, ExternalLink, Download, Pencil, Trash2, Bookmark,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { deleteSourceFiles } from '../../api/files';
@@ -16,9 +16,10 @@ interface Props {
   onToggleSelect?: (path: string) => void;
   onRename?: (path: string) => void;
   onRefresh?: () => void;
+  hasBookmark?: boolean;
 }
 
-export default function FileRow({ item, active, selected, onPlay, onToggleSelect, onRename, onRefresh }: Props) {
+export default function FileRow({ item, active, selected, onPlay, onToggleSelect, onRename, onRefresh, hasBookmark }: Props) {
   const navigate = useNavigate();
   const { authenticated } = useAuth();
 
@@ -71,7 +72,10 @@ export default function FileRow({ item, active, selected, onPlay, onToggleSelect
         </div>
       </td>
       <td className={styles.nameCell} onClick={handleClick}>
-        <div className={styles.name}>{item.name}</div>
+        <div className={styles.name}>
+          {item.name}
+          {hasBookmark && <Bookmark size={12} className={styles.bookmarkIcon} />}
+        </div>
         {item.is_video && item.video_metadata && (
           <div className={styles.meta}>
             {item.video_metadata.duration && <span className={styles.metaItem}>{item.video_metadata.duration}</span>}

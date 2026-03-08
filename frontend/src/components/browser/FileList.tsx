@@ -12,9 +12,10 @@ interface Props {
   activeItem: string | null;
   onPlay: (item: BrowseItem) => void;
   onRefresh?: () => void;
+  bookmarkedPaths?: Set<string>;
 }
 
-export default function FileList({ items, activeItem, onPlay, onRefresh }: Props) {
+export default function FileList({ items, activeItem, onPlay, onRefresh, bookmarkedPaths }: Props) {
   const { authenticated } = useAuth();
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [renameTarget, setRenameTarget] = useState<string | null>(null);
@@ -114,6 +115,7 @@ export default function FileList({ items, activeItem, onPlay, onRefresh }: Props
                 onToggleSelect={toggleItem}
                 onRename={setRenameTarget}
                 onRefresh={onRefresh}
+                hasBookmark={bookmarkedPaths?.has(item.path)}
               />
             ))}
           </tbody>

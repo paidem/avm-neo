@@ -148,6 +148,18 @@
   flex: 1;
 }
 
+.cardActions {
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.card:hover .cardActions {
+  opacity: 1;
+}
+
+.editBtn,
 .deleteBtn {
   display: flex;
   align-items: center;
@@ -157,17 +169,69 @@
   padding: 4px;
   border-radius: 4px;
   color: var(--text-muted);
-  opacity: 0;
   transition: all 0.15s;
 }
 
-.card:hover .deleteBtn {
-  opacity: 1;
+.editBtn:hover {
+  color: var(--accent);
+  background: var(--active-row);
 }
 
 .deleteBtn:hover {
   color: var(--danger);
   background: rgba(239, 68, 68, 0.08);
+}
+
+.editField {
+  display: flex;
+  flex-direction: column;
+}
+
+.editField textarea {
+  width: 100%;
+  resize: vertical;
+}
+
+.editActions {
+  display: flex;
+  gap: 8px;
+}
+
+.saveBtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition: background 0.15s;
+}
+
+.saveBtn:hover {
+  background: var(--accent-hover);
+}
+
+.cancelBtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  background: none;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition: all 0.15s;
+}
+
+.cancelBtn:hover {
+  color: var(--text-primary);
+  border-color: var(--text-secondary);
 }
 
 .cardMeta {

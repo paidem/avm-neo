@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useLocation, useSearchParams } from 'react-router-dom';
 import { fetchBrowse } from '../api/browse';
+import { fetchBookmarks } from '../api/bookmarks';
 import type { BrowseResponse, BrowseItem } from '../types/api';
 import Breadcrumbs from '../components/layout/Breadcrumbs';
 import FolderNavigation from '../components/browser/FolderNavigation';
@@ -19,7 +20,14 @@ export default function BrowsePage() {
   const [error, setError] = useState<string | null>(null);
   const [activeItem, setActiveItem] = useState<string | null>(null);
   const [previewItem, setPreviewItem] = useState<BrowseItem | null>(null);
+  const [bookmarkedPaths, setBookmarkedPaths] = useState<Set<string>>(new Set());
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    fetchBookmarks()
+      .then((bms) => setBookmarkedPaths(new Set(bms.map((b) => b.video_path))))
+      .catch(() => {});
+  }, [decodedPath]);
 
   useEffect(() => {
     setLoading(true);
@@ -87,6 +95,7 @@ export default function BrowsePage() {
           activeItem={activeItem}
           onPlay={handlePlay}
           onRefresh={refreshList}
+          bookmarkedPaths={bookmarkedPaths}
         />
       </div>
 
