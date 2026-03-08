@@ -1,25 +1,42 @@
 import { useNavigate } from 'react-router-dom';
 import {
   Folder, Film, Image, Music, FileText,
-  Play, ExternalLink, Download,
+  Play, ExternalLink, Download, Pencil, Trash2,
 } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
+import { deleteSourceFiles } from '../../api/files';
 import type { BrowseItem } from '../../types/api';
 import styles from './FileRow.module.css';
 
 interface Props {
   item: BrowseItem;
   active: boolean;
+  selected?: boolean;
   onPlay: (item: BrowseItem) => void;
+  onToggleSelect?: (path: string) => void;
+  onRename?: (path: string) => void;
+  onRefresh?: () => void;
 }
 
-export default function FileRow({ item, active, onPlay }: Props) {
+export default function FileRow({ item, active, selected, onPlay, onToggleSelect, onRename, onRefresh }: Props) {
   const navigate = useNavigate();
+  const { authenticated } = useAuth();
 
   const handleClick = () => {
     if (item.is_dir) {
       navigate(`/browse/${item.path}`);
     } else if (item.is_video || item.is_image || item.is_audio) {
       onPlay(item);
+    }
+  };
+
+  const handleDeleteSource = async () => {
+    if (!confirm('Delete source files for this merged video?')) return;
+    try {
+      await deleteSourceFiles(item.path);
+      onRefresh?.();
+    } catch (e: any) {
+      alert('Error: ' + e.message);
     }
   };
 
@@ -37,31 +54,30 @@ export default function FileRow({ item, active, onPlay }: Props) {
 
   return (
     <tr className={`${styles.row} ${active ? styles.active : ''}`}>
+      {authenticated && (
+        <td className={styles.checkCell}>
+          {!item.is_dir && (
+            <input
+              type="checkbox"
+              checked={selected || false}
+              onChange={() => onToggleSelect?.(item.path)}
+            />
+          )}
+        </td>
+      )}
       <td className={styles.thumbCell} onClick={handleClick}>
         <div className={styles.thumb}>
-          {item.thumbnail ? (
-            <img src={item.thumbnail} alt="" />
-          ) : (
-            icon
-          )}
+          {item.thumbnail ? <img src={item.thumbnail} alt="" /> : icon}
         </div>
       </td>
       <td className={styles.nameCell} onClick={handleClick}>
         <div className={styles.name}>{item.name}</div>
         {item.is_video && item.video_metadata && (
           <div className={styles.meta}>
-            {item.video_metadata.duration && (
-              <span className={styles.metaItem}>{item.video_metadata.duration}</span>
-            )}
-            {item.video_metadata.codec && (
-              <span className={styles.metaItem}>{item.video_metadata.codec}</span>
-            )}
-            {item.video_metadata.framerate && (
-              <span className={styles.metaItem}>{item.video_metadata.framerate}</span>
-            )}
-            {item.video_metadata.creation_time && (
-              <span className={styles.metaItem}>{item.video_metadata.creation_time}</span>
-            )}
+            {item.video_metadata.duration && <span className={styles.metaItem}>{item.video_metadata.duration}</span>}
+            {item.video_metadata.codec && <span className={styles.metaItem}>{item.video_metadata.codec}</span>}
+            {item.video_metadata.framerate && <span className={styles.metaItem}>{item.video_metadata.framerate}</span>}
+            {item.video_metadata.creation_time && <span className={styles.metaItem}>{item.video_metadata.creation_time}</span>}
           </div>
         )}
         {item.source_files && (
@@ -85,23 +101,23 @@ export default function FileRow({ item, active, onPlay }: Props) {
           )}
           {!item.is_dir && (
             <>
-              <a
-                href={`/api/view/${item.path}`}
-                target="_blank"
-                rel="noopener"
-                className={styles.actionBtn}
-                title="Open in new tab"
-              >
+              <a href={`/api/view/${item.path}`} target="_blank" rel="noopener" className={styles.actionBtn} title="Open in new tab">
                 <ExternalLink size={14} />
               </a>
-              <a
-                href={`/api/download/${item.path}`}
-                className={styles.actionBtn}
-                title="Download"
-              >
+              <a href={`/api/download/${item.path}`} className={styles.actionBtn} title="Download">
                 <Download size={14} />
               </a>
             </>
+          )}
+          {authenticated && (
+            <button className={styles.actionBtn} onClick={() => onRename?.(item.path)} title="Rename">
+              <Pencil size={14} />
+            </button>
+          )}
+          {authenticated && item.source_files && (
+            <button className={`${styles.actionBtn} ${styles.dangerBtn}`} onClick={handleDeleteSource} title="Delete source files">
+              <Trash2 size={14} />
+            </button>
           )}
         </div>
       </td>

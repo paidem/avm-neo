@@ -1,3 +1,49 @@
+.actionBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--card-bg);
+}
+
+.actionButtons {
+  display: flex;
+  gap: 6px;
+}
+
+.mergeBtn,
+.deleteBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #fff;
+}
+
+.mergeBtn { background: var(--accent); }
+.mergeBtn:hover { background: var(--accent-hover); }
+.deleteBtn { background: var(--danger); }
+.deleteBtn:hover { background: var(--danger-hover); }
+.mergeBtn:disabled, .deleteBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.selectAll {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.selectAll input { margin: 0; }
+
+.thCheck { width: 36px; }
+
 .tableWrap {
   overflow-x: auto;
 }

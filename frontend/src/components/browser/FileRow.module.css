@@ -10,6 +10,17 @@
   background: var(--active-row);
 }
 
+.checkCell {
+  width: 36px;
+  padding: 8px 0 8px 16px;
+  vertical-align: middle;
+}
+
+.checkCell input {
+  margin: 0;
+  cursor: pointer;
+}
+
 .thumbCell {
   width: 120px;
   padding: 8px 8px 8px 16px;
@@ -123,4 +134,9 @@
   color: var(--accent);
   border-color: var(--accent);
   background: var(--active-row);
+}
+
+.dangerBtn:hover {
+  color: var(--danger);
+  border-color: var(--danger);
 }
