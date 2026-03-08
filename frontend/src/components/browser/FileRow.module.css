@@ -1,0 +1,126 @@
+.row {
+  transition: background 0.1s;
+}
+
+.row:hover {
+  background: var(--hover-row);
+}
+
+.row.active {
+  background: var(--active-row);
+}
+
+.thumbCell {
+  width: 120px;
+  padding: 8px 8px 8px 16px;
+  cursor: pointer;
+}
+
+.thumb {
+  width: 100px;
+  height: 56px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-tertiary);
+  border-radius: 6px;
+}
+
+.thumb img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.iconFolder { color: var(--warning); }
+.iconVideo { color: var(--accent); }
+.iconImage { color: var(--success); }
+.iconAudio { color: #a855f7; }
+.iconFile { color: var(--text-muted); }
+
+.nameCell {
+  padding: 8px;
+  cursor: pointer;
+}
+
+.name {
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.meta {
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.metaItem {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.sourceFiles {
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.sourceTitle {
+  font-style: italic;
+  margin-right: 4px;
+}
+
+.sourceItem {
+  display: inline;
+}
+
+.sourceItem::after {
+  content: ', ';
+}
+
+.sourceItem:last-child::after {
+  content: '';
+}
+
+.sizeCell {
+  padding: 8px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.actionsCell {
+  padding: 8px 16px 8px 8px;
+  text-align: right;
+}
+
+.actions {
+  display: flex;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
+.actionBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--card-bg);
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: all 0.15s;
+}
+
+.actionBtn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--active-row);
+}
