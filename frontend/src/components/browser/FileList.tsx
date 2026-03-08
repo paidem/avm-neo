@@ -6,6 +6,7 @@ interface Props {
   items: BrowseItem[];
   activeItem: string | null;
   onPlay: (item: BrowseItem) => void;
+  onRefresh?: () => void;
 }
 
 export default function FileList({ items, activeItem, onPlay }: Props) {

@@ -1,14 +1,16 @@
-import { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { useLocation, useSearchParams } from 'react-router-dom';
 import { fetchBrowse } from '../api/browse';
 import type { BrowseResponse, BrowseItem } from '../types/api';
 import Breadcrumbs from '../components/layout/Breadcrumbs';
 import FolderNavigation from '../components/browser/FolderNavigation';
 import FileList from '../components/browser/FileList';
+import MediaPreview from '../components/player/MediaPreview';
 import styles from './BrowsePage.module.css';
 
 export default function BrowsePage() {
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const subpath = location.pathname.replace(/^\/browse\/?/, '');
   const decodedPath = decodeURIComponent(subpath);
 
@@ -17,6 +19,7 @@ export default function BrowsePage() {
   const [error, setError] = useState<string | null>(null);
   const [activeItem, setActiveItem] = useState<string | null>(null);
   const [previewItem, setPreviewItem] = useState<BrowseItem | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     setLoading(true);
@@ -24,10 +27,29 @@ export default function BrowsePage() {
     setActiveItem(null);
     setPreviewItem(null);
     fetchBrowse(decodedPath)
-      .then(setData)
+      .then((result) => {
+        setData(result);
+        // Handle ?play=filename&t=seconds query params (from bookmarks)
+        const playFile = searchParams.get('play');
+        const seekTime = searchParams.get('t');
+        if (playFile) {
+          const item = result.items.find((i) => i.name === playFile);
+          if (item) {
+            setActiveItem(item.path);
+            setPreviewItem(item);
+            if (seekTime && item.is_video) {
+              setTimeout(() => {
+                if (videoRef.current) {
+                  videoRef.current.currentTime = parseFloat(seekTime);
+                }
+              }, 500);
+            }
+          }
+        }
+      })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
-  }, [decodedPath]);
+  }, [decodedPath, searchParams]);
 
   const handlePlay = (item: BrowseItem) => {
     setActiveItem(item.path);
@@ -37,6 +59,10 @@ export default function BrowsePage() {
   const handleClosePreview = () => {
     setActiveItem(null);
     setPreviewItem(null);
+  };
+
+  const refreshList = () => {
+    fetchBrowse(decodedPath).then(setData).catch(() => {});
   };
 
   if (loading) {
@@ -49,14 +75,6 @@ export default function BrowsePage() {
 
   if (!data) return null;
 
-  const mediaType = previewItem?.is_video
-    ? 'video'
-    : previewItem?.is_image
-      ? 'image'
-      : previewItem?.is_audio
-        ? 'audio'
-        : null;
-
   return (
     <div className={styles.page}>
       <div className={styles.filePanel}>
@@ -68,50 +86,17 @@ export default function BrowsePage() {
           items={data.items}
           activeItem={activeItem}
           onPlay={handlePlay}
+          onRefresh={refreshList}
         />
       </div>
 
       <div className={styles.previewPanel}>
-        {previewItem && mediaType ? (
-          <div className={styles.previewContent}>
-            <div className={styles.previewHeader}>
-              <span className={styles.previewTitle}>{previewItem.name}</span>
-              <button className={styles.closeBtn} onClick={handleClosePreview}>
-                Close
-              </button>
-            </div>
-            {mediaType === 'video' && (
-              <video
-                className={styles.videoPlayer}
-                controls
-                autoPlay
-                preload="auto"
-                src={`/api/view/${previewItem.path}`}
-              />
-            )}
-            {mediaType === 'image' && (
-              <img
-                className={styles.imageViewer}
-                src={`/api/view/${previewItem.path}`}
-                alt={previewItem.name}
-              />
-            )}
-            {mediaType === 'audio' && (
-              <div className={styles.audioContainer}>
-                <Music size={64} className={styles.audioIcon} />
-                <audio controls autoPlay src={`/api/view/${previewItem.path}`} />
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className={styles.placeholder}>
-            <p>Select a file to preview</p>
-          </div>
-        )}
+        <MediaPreview
+          item={previewItem}
+          onClose={handleClosePreview}
+          videoRef={videoRef}
+        />
       </div>
     </div>
   );
 }
-
-// Need to import Music for the audio case
-import { Music } from 'lucide-react';
