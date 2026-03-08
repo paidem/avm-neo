@@ -3,10 +3,7 @@ import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import Header from './components/layout/Header';
 import BrowsePage from './pages/BrowsePage';
-
-function BookmarksPlaceholder() {
-  return <div style={{ padding: 40 }}>Bookmarks page - coming soon</div>;
-}
+import BookmarksPage from './pages/BookmarksPage';
 
 export default function App() {
   return (
@@ -17,7 +14,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Navigate to="/browse" replace />} />
           <Route path="/browse/*" element={<BrowsePage />} />
-          <Route path="/bookmarks" element={<BookmarksPlaceholder />} />
+          <Route path="/bookmarks" element={<BookmarksPage />} />
         </Routes>
       </AuthProvider>
       </ThemeProvider>
