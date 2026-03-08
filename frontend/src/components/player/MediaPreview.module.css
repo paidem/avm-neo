@@ -24,6 +24,29 @@
   margin-right: 12px;
 }
 
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.bookmarkBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 4px 8px;
+  color: var(--text-secondary);
+  transition: all 0.15s;
+}
+
+.bookmarkBtn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
 .closeBtn {
   display: flex;
   align-items: center;

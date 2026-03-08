@@ -1,6 +1,7 @@
-import { useRef } from 'react';
-import { X, Music } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { X, Music, Bookmark } from 'lucide-react';
 import type { BrowseItem } from '../../types/api';
+import BookmarkForm from '../bookmarks/BookmarkForm';
 import styles from './MediaPreview.module.css';
 
 interface Props {
@@ -12,6 +13,7 @@ interface Props {
 export default function MediaPreview({ item, onClose, videoRef }: Props) {
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const ref = videoRef || localVideoRef;
+  const [bookmarkOpen, setBookmarkOpen] = useState(false);
 
   if (!item) {
     return (
@@ -27,9 +29,16 @@ export default function MediaPreview({ item, onClose, videoRef }: Props) {
     <div className={styles.content}>
       <div className={styles.header}>
         <span className={styles.title}>{item.name}</span>
-        <button className={styles.closeBtn} onClick={onClose}>
-          <X size={16} />
-        </button>
+        <div className={styles.headerActions}>
+          {item.is_video && (
+            <button className={styles.bookmarkBtn} onClick={() => setBookmarkOpen(true)} title="Add bookmark">
+              <Bookmark size={16} />
+            </button>
+          )}
+          <button className={styles.closeBtn} onClick={onClose}>
+            <X size={16} />
+          </button>
+        </div>
       </div>
 
       {mediaType === 'video' && (
@@ -56,6 +65,14 @@ export default function MediaPreview({ item, onClose, videoRef }: Props) {
           <audio controls autoPlay key={item.path} src={`/api/view/${item.path}`} />
         </div>
       )}
+
+      <BookmarkForm
+        open={bookmarkOpen}
+        videoPath={item.path}
+        videoDate={item.video_metadata?.creation_time || item.modified}
+        positionSeconds={ref.current?.currentTime ?? 0}
+        onClose={() => setBookmarkOpen(false)}
+      />
     </div>
   );
 }

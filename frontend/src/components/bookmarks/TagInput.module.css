@@ -1,0 +1,98 @@
+.container {
+  position: relative;
+}
+
+.inputArea {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 6px 8px;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 6px;
+  min-height: 38px;
+  align-items: center;
+  cursor: text;
+}
+
+.inputArea:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background: var(--tag-bg);
+  color: var(--tag-text);
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.chipRemove {
+  display: flex;
+  align-items: center;
+  background: none;
+  border: none;
+  color: inherit;
+  padding: 0;
+  opacity: 0.7;
+  cursor: pointer;
+}
+
+.chipRemove:hover {
+  opacity: 1;
+}
+
+.input {
+  flex: 1;
+  min-width: 80px;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 0.875rem;
+  padding: 2px 4px;
+  color: var(--text-primary);
+  box-shadow: none;
+}
+
+.input:focus {
+  box-shadow: none;
+}
+
+.dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 4px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  box-shadow: var(--shadow-md);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 10;
+}
+
+.option {
+  padding: 8px 12px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.option:hover,
+.option.highlighted {
+  background: var(--accent);
+  color: #fff;
+}
+
+.createOption {
+  font-style: italic;
+  border-top: 1px solid var(--border-color);
+}
