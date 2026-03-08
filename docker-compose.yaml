@@ -1,0 +1,20 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - /media:/media
+      - thumbnails:/app/thumbnails
+      - db_data:/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MEDIA_BASE_DIR=/media
+      - ADMIN_PASSWORD=admin
+      - DATABASE_URL=sqlite:///data/avm.db
+      - THUMBNAIL_DIR=/app/thumbnails
+    restart: unless-stopped
+
+volumes:
+  thumbnails:
+  db_data:
