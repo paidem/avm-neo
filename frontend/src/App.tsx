@@ -1,4 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import Header from './components/layout/Header';
 
 function BrowsePlaceholder() {
   return <div style={{ padding: 40 }}>Browse page - coming soon</div>;
@@ -11,11 +13,14 @@ function BookmarksPlaceholder() {
 export default function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Navigate to="/browse" replace />} />
-        <Route path="/browse/*" element={<BrowsePlaceholder />} />
-        <Route path="/bookmarks" element={<BookmarksPlaceholder />} />
-      </Routes>
+      <AuthProvider>
+        <Header />
+        <Routes>
+          <Route path="/" element={<Navigate to="/browse" replace />} />
+          <Route path="/browse/*" element={<BrowsePlaceholder />} />
+          <Route path="/bookmarks" element={<BookmarksPlaceholder />} />
+        </Routes>
+      </AuthProvider>
     </BrowserRouter>
   );
 }
