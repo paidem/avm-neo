@@ -8,6 +8,8 @@ from app.services.filesystem import (
     get_file_info, get_source_info, get_file_type,
     build_breadcrumbs, get_neighboring_dirs,
 )
+from app.services.thumbnails import get_thumbnail_url
+from app.services.media_metadata import get_video_metadata
 
 router = APIRouter(prefix="/api/browse", tags=["browse"])
 
@@ -67,7 +69,11 @@ def browse(subpath: str = "", user: dict = Depends(get_current_user)):
             if not is_dir:
                 item.update(get_file_info(abs_path))
                 if is_video:
+                    item["thumbnail"] = get_thumbnail_url(item_path, abs_path, is_video=True)
+                    item["video_metadata"] = get_video_metadata(abs_path)
                     item["source_files"] = get_source_info(abs_path)
+                elif is_image:
+                    item["thumbnail"] = get_thumbnail_url(item_path, abs_path, is_video=False)
 
             items.append(item)
     except PermissionError:
