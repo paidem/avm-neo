@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Shield, Eye, LogIn, LogOut, Bookmark, FolderOpen } from 'lucide-react';
+import { Shield, Eye, LogIn, LogOut, Bookmark, FolderOpen, Sun, Moon } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 import LoginModal from '../auth/LoginModal';
 import styles from './Header.module.css';
 
 export default function Header() {
   const { authenticated, username, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [loginOpen, setLoginOpen] = useState(false);
   const location = useLocation();
 
@@ -34,6 +36,9 @@ export default function Header() {
         </div>
 
         <div className={styles.right}>
+          <button className={styles.themeBtn} onClick={toggleTheme} title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}>
+            {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
+          </button>
           <div className={styles.authBadge}>
             {authenticated ? (
               <>
