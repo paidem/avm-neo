@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 
 from app.config import settings
 from app.database import init_db
-from app.routers import auth, browse, media, thumbnails, files
+from app.routers import auth, browse, media, thumbnails, files, bookmarks
 
 
 @asynccontextmanager
@@ -30,6 +30,7 @@ app.include_router(browse.router)
 app.include_router(media.router)
 app.include_router(thumbnails.router)
 app.include_router(files.router)
+app.include_router(bookmarks.router)
 
 
 @app.get("/api/health")
