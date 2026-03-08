@@ -1,0 +1,9 @@
+services:
+  app:
+    environment:
+      - USERNAME_HEADER=X-Email
+      - ADMIN_USERS=admin@example.com
+
+  nginx:
+    volumes:
+      - ./nginx/nginx-oauth.conf:/etc/nginx/nginx.conf:ro

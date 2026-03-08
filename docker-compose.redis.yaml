@@ -1,0 +1,16 @@
+services:
+  app:
+    environment:
+      - SESSION_TYPE=redis
+      - REDIS_HOST=redis
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+
+volumes:
+  redis_data:
