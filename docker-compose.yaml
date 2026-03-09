@@ -1,8 +1,10 @@
 services:
   app:
     build: .
+    ports:
+      - "9002:8000"
     volumes:
-      - /media:/media
+      - ./test-media:/media
       - thumbnails:/app/thumbnails
       - db_data:/app/data
     environment:
@@ -16,10 +18,10 @@ services:
   nginx:
     image: nginx:alpine
     ports:
-      - "80:80"
+      - "9080:80"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - /media:/media:ro
+      - ./test-media:/media:ro
       - thumbnails:/thumbnails:ro
     depends_on:
       - app

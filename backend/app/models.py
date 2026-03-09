@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, Integer, Text, Real, Table, ForeignKey, Index
+from sqlalchemy import Column, Integer, Float, Text, Table, ForeignKey, Index
 from sqlalchemy.orm import relationship
 
 from app.database import Base
@@ -20,7 +20,7 @@ class Bookmark(Base):
     description = Column(Text, nullable=False)
     video_path = Column(Text, nullable=False, index=True)
     video_date = Column(Text, nullable=True)
-    position_seconds = Column(Real, nullable=False, default=0)
+    position_seconds = Column(Float, nullable=False, default=0)
     created_at = Column(Text, nullable=False, default=lambda: datetime.now(timezone.utc).isoformat())
     updated_at = Column(Text, nullable=False, default=lambda: datetime.now(timezone.utc).isoformat())
 
