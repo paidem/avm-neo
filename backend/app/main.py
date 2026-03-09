@@ -56,6 +56,10 @@ if SPA_DIR.is_dir():
     @app.get("/{full_path:path}")
     async def serve_spa(full_path: str):
         """Serve SPA index.html for all non-API routes (client-side routing)."""
+        # Never intercept API routes — let them 404 naturally
+        if full_path.startswith("api/") or full_path == "api":
+            from fastapi.responses import JSONResponse
+            return JSONResponse({"detail": "Not Found"}, status_code=404)
         file_path = SPA_DIR / full_path
         if file_path.is_file():
             return FileResponse(file_path)
