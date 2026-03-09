@@ -7,7 +7,7 @@ interface Props {
   open: boolean;
   filePath: string;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (newName?: string) => void;
 }
 
 export default function RenameDialog({ open, filePath, onClose, onSuccess }: Props) {
@@ -61,7 +61,7 @@ export default function RenameDialog({ open, filePath, onClose, onSuccess }: Pro
     try {
       const result = await renameFile(filePath, trimmed);
       if (result.status === 'success') {
-        onSuccess();
+        onSuccess(trimmed);
         onClose();
       } else {
         setError(result.message);

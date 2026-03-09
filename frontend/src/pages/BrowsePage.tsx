@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
-import { useLocation, useSearchParams } from 'react-router-dom';
+import { useLocation, useSearchParams, useNavigate } from 'react-router-dom';
 import { fetchBrowse } from '../api/browse';
 import { fetchBookmarks } from '../api/bookmarks';
+import { useAuth } from '../context/AuthContext';
 import type { BrowseResponse, BrowseItem } from '../types/api';
 import Breadcrumbs from '../components/layout/Breadcrumbs';
 import FolderNavigation from '../components/browser/FolderNavigation';
+import RenameDialog from '../components/browser/RenameDialog';
 import FileList from '../components/browser/FileList';
 import MediaPreview from '../components/player/MediaPreview';
 import Spinner from '../components/layout/Spinner';
@@ -22,6 +24,9 @@ export default function BrowsePage() {
   const [activeItem, setActiveItem] = useState<string | null>(null);
   const [previewItem, setPreviewItem] = useState<BrowseItem | null>(null);
   const [bookmarkedPaths, setBookmarkedPaths] = useState<Set<string>>(new Set());
+  const [renamingFolder, setRenamingFolder] = useState(false);
+  const { authenticated } = useAuth();
+  const navigate = useNavigate();
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -88,7 +93,10 @@ export default function BrowsePage() {
     <div className={styles.page}>
       <div className={styles.filePanel}>
         <div className={styles.topBar}>
-          <Breadcrumbs breadcrumbs={data.breadcrumbs} />
+          <Breadcrumbs
+            breadcrumbs={data.breadcrumbs}
+            onRenameFolder={authenticated && decodedPath ? () => setRenamingFolder(true) : undefined}
+          />
           <FolderNavigation prevDir={data.prev_dir} nextDir={data.next_dir} />
         </div>
         <FileList
@@ -107,6 +115,22 @@ export default function BrowsePage() {
           videoRef={videoRef}
         />
       </div>
+
+      <RenameDialog
+        open={renamingFolder}
+        filePath={decodedPath}
+        onClose={() => setRenamingFolder(false)}
+        onSuccess={(newName) => {
+          setRenamingFolder(false);
+          if (newName) {
+            const parent = decodedPath.includes('/')
+              ? decodedPath.substring(0, decodedPath.lastIndexOf('/'))
+              : '';
+            const newPath = parent ? `${parent}/${newName}` : newName;
+            navigate(`/browse/${newPath}`, { replace: true });
+          }
+        }}
+      />
     </div>
   );
 }
