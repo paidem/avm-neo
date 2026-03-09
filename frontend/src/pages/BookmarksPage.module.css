@@ -304,6 +304,20 @@
   color: var(--text-secondary);
 }
 
+.videoLink {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.videoLink:hover {
+  color: var(--accent);
+}
+
 .cardTags {
   display: flex;
   flex-wrap: wrap;

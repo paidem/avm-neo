@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Bookmark, Play, Tag, Trash2, Search, Pencil, Check, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Bookmark, Play, FolderOpen, Tag, Trash2, Search, Pencil, Check, X } from 'lucide-react';
 import { fetchBookmarks, deleteBookmark, updateBookmark, searchTags } from '../api/bookmarks';
 import TagInput from '../components/bookmarks/TagInput';
 import VideoPopup from '../components/bookmarks/VideoPopup';
@@ -19,6 +20,7 @@ export default function BookmarksPage() {
   const [editTags, setEditTags] = useState<string[]>([]);
   const [popupBookmark, setPopupBookmark] = useState<BookmarkType | null>(null);
   const { authenticated } = useAuth();
+  const navigate = useNavigate();
 
   const refreshTags = () => searchTags('').then(setAllTags).catch(() => {});
 
@@ -207,10 +209,21 @@ export default function BookmarksPage() {
                       )}
                     </div>
                     <div className={styles.cardMeta}>
-                      <span className={styles.metaItem}>
-                        <Play size={13} />
-                        {b.video_path.split('/').pop()}
-                      </span>
+                      <a
+                        className={styles.videoLink}
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          const parts = b.video_path.split('/');
+                          const filename = parts.pop()!;
+                          const dir = parts.join('/');
+                          navigate(`/browse/${dir}?play=${encodeURIComponent(filename)}&t=${b.position_seconds}`);
+                        }}
+                        title="Open in folder"
+                      >
+                        <FolderOpen size={13} />
+                        {b.video_path}
+                      </a>
                     </div>
                     {b.tags.length > 0 && (
                       <div className={styles.cardTags}>
