@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.database import get_db
+from app.dependencies import require_admin
 from app.models import Bookmark, Tag, bookmark_tags
 from app.services.bookmark_screenshots import (
     delete_bookmark_screenshot,
@@ -90,7 +91,7 @@ def list_bookmarks(
 
 
 @router.post("/bookmarks")
-def create_bookmark(req: BookmarkCreate, db: Session = Depends(get_db)):
+def create_bookmark(req: BookmarkCreate, db: Session = Depends(get_db), _user: dict = Depends(require_admin)):
     now = datetime.now(timezone.utc).isoformat()
     bookmark = Bookmark(
         description=req.description,
@@ -146,7 +147,7 @@ def get_bookmark_screenshot(bookmark_id: int, db: Session = Depends(get_db)):
 
 
 @router.put("/bookmarks/{bookmark_id}")
-def update_bookmark(bookmark_id: int, req: BookmarkUpdate, db: Session = Depends(get_db)):
+def update_bookmark(bookmark_id: int, req: BookmarkUpdate, db: Session = Depends(get_db), _user: dict = Depends(require_admin)):
     bookmark = db.query(Bookmark).filter(Bookmark.id == bookmark_id).first()
     if not bookmark:
         raise HTTPException(status_code=404, detail="Bookmark not found")
@@ -165,7 +166,7 @@ def update_bookmark(bookmark_id: int, req: BookmarkUpdate, db: Session = Depends
 
 
 @router.delete("/bookmarks/{bookmark_id}")
-def delete_bookmark(bookmark_id: int, db: Session = Depends(get_db)):
+def delete_bookmark(bookmark_id: int, db: Session = Depends(get_db), _user: dict = Depends(require_admin)):
     bookmark = db.query(Bookmark).filter(Bookmark.id == bookmark_id).first()
     if not bookmark:
         raise HTTPException(status_code=404, detail="Bookmark not found")
