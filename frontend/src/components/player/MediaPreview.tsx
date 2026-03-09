@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { X, Music, Bookmark } from 'lucide-react';
 import type { BrowseItem } from '../../types/api';
+import { useAuth } from '../../context/AuthContext';
 import BookmarkForm from '../bookmarks/BookmarkForm';
 import styles from './MediaPreview.module.css';
 
@@ -14,6 +15,7 @@ export default function MediaPreview({ item, onClose, videoRef }: Props) {
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const ref = videoRef || localVideoRef;
   const [bookmarkOpen, setBookmarkOpen] = useState(false);
+  const { authenticated } = useAuth();
 
   if (!item) {
     return (
@@ -30,7 +32,7 @@ export default function MediaPreview({ item, onClose, videoRef }: Props) {
       <div className={styles.header}>
         <span className={styles.title}>{item.name}</span>
         <div className={styles.headerActions}>
-          {item.is_video && (
+          {item.is_video && authenticated && (
             <button className={styles.bookmarkBtn} onClick={() => setBookmarkOpen(true)} title="Add bookmark">
               <Bookmark size={16} />
             </button>

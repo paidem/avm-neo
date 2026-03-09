@@ -3,6 +3,7 @@ import { Bookmark, Play, Tag, Trash2, Search, Pencil, Check, X } from 'lucide-re
 import { fetchBookmarks, deleteBookmark, updateBookmark, searchTags } from '../api/bookmarks';
 import TagInput from '../components/bookmarks/TagInput';
 import VideoPopup from '../components/bookmarks/VideoPopup';
+import { useAuth } from '../context/AuthContext';
 import type { Bookmark as BookmarkType, Tag as TagType } from '../types/api';
 import Spinner from '../components/layout/Spinner';
 import styles from './BookmarksPage.module.css';
@@ -17,6 +18,7 @@ export default function BookmarksPage() {
   const [editDesc, setEditDesc] = useState('');
   const [editTags, setEditTags] = useState<string[]>([]);
   const [popupBookmark, setPopupBookmark] = useState<BookmarkType | null>(null);
+  const { authenticated } = useAuth();
 
   const refreshTags = () => searchTags('').then(setAllTags).catch(() => {});
 
@@ -185,22 +187,24 @@ export default function BookmarksPage() {
                   <div className={styles.cardBody}>
                     <div className={styles.cardHeader}>
                       <p className={styles.description}>{b.description}</p>
-                      <div className={styles.cardActions}>
-                        <button
-                          className={styles.editBtn}
-                          onClick={() => startEdit(b)}
-                          title="Edit bookmark"
-                        >
-                          <Pencil size={14} />
-                        </button>
-                        <button
-                          className={styles.deleteBtn}
-                          onClick={() => handleDelete(b.id)}
-                          title="Delete bookmark"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
+                      {authenticated && (
+                        <div className={styles.cardActions}>
+                          <button
+                            className={styles.editBtn}
+                            onClick={() => startEdit(b)}
+                            title="Edit bookmark"
+                          >
+                            <Pencil size={14} />
+                          </button>
+                          <button
+                            className={styles.deleteBtn}
+                            onClick={() => handleDelete(b.id)}
+                            title="Delete bookmark"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      )}
                     </div>
                     <div className={styles.cardMeta}>
                       <span className={styles.metaItem}>
