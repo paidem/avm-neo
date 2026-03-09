@@ -49,6 +49,7 @@ export interface Bookmark {
   tags: Tag[];
   created_at: string;
   updated_at: string;
+  screenshot_url: string;
 }
 
 export interface Tag {

@@ -1,10 +1,20 @@
+import os
 from datetime import datetime, timezone
+
 from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
+from app.config import settings
 from app.database import get_db
 from app.models import Bookmark, Tag, bookmark_tags
+from app.services.bookmark_screenshots import (
+    delete_bookmark_screenshot,
+    generate_bookmark_screenshot,
+    screenshot_exists,
+    get_bookmark_screenshot_path,
+)
 
 router = APIRouter(prefix="/api", tags=["bookmarks"])
 
@@ -60,6 +70,7 @@ def _serialize_bookmark(b: Bookmark) -> dict:
         "tags": [{"id": t.id, "name": t.name} for t in b.tags],
         "created_at": b.created_at,
         "updated_at": b.updated_at,
+        "screenshot_url": f"/api/bookmarks/{b.id}/screenshot",
     }
 
 
@@ -93,6 +104,12 @@ def create_bookmark(req: BookmarkCreate, db: Session = Depends(get_db)):
     db.add(bookmark)
     db.commit()
     db.refresh(bookmark)
+
+    # Generate screenshot from the video at the bookmarked position
+    abs_path = os.path.join(settings.MEDIA_BASE_DIR, req.video_path)
+    if os.path.exists(abs_path):
+        generate_bookmark_screenshot(bookmark.id, abs_path, req.position_seconds)
+
     return _serialize_bookmark(bookmark)
 
 
@@ -102,6 +119,30 @@ def get_bookmark(bookmark_id: int, db: Session = Depends(get_db)):
     if not bookmark:
         raise HTTPException(status_code=404, detail="Bookmark not found")
     return _serialize_bookmark(bookmark)
+
+
+@router.get("/bookmarks/{bookmark_id}/screenshot")
+def get_bookmark_screenshot(bookmark_id: int, db: Session = Depends(get_db)):
+    bookmark = db.query(Bookmark).filter(Bookmark.id == bookmark_id).first()
+    if not bookmark:
+        raise HTTPException(status_code=404, detail="Bookmark not found")
+
+    # Lazy generation: create screenshot if it doesn't exist yet
+    if not screenshot_exists(bookmark_id):
+        abs_path = os.path.join(settings.MEDIA_BASE_DIR, bookmark.video_path)
+        if not os.path.exists(abs_path):
+            raise HTTPException(status_code=404, detail="Video file not found")
+        result = generate_bookmark_screenshot(
+            bookmark_id, abs_path, bookmark.position_seconds
+        )
+        if not result:
+            raise HTTPException(status_code=500, detail="Screenshot generation failed")
+
+    return FileResponse(
+        get_bookmark_screenshot_path(bookmark_id),
+        media_type="image/jpeg",
+        headers={"Cache-Control": "public, max-age=86400"},
+    )
 
 
 @router.put("/bookmarks/{bookmark_id}")
@@ -132,6 +173,7 @@ def delete_bookmark(bookmark_id: int, db: Session = Depends(get_db)):
     db.commit()
     _cleanup_orphan_tags(db)
     db.commit()
+    delete_bookmark_screenshot(bookmark_id)
     return {"status": "success"}
 
 

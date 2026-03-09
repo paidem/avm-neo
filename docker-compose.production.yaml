@@ -57,6 +57,7 @@ services:
 
   app:
     image: ghcr.io/${GITHUB_REPOSITORY:-paidem/avm-neo}:latest     # or pin to a version tag
+    build: .                                                        # used when building locally; ignored on pull-only deploys
     volumes:
       - ${MEDIA_DIR:-/media}:/media
       - thumbnails:/app/thumbnails
