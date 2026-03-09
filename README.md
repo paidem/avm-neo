@@ -1,8 +1,10 @@
+![Screenshot](screenshots/screenshot1.png)
+
 # Action Video Manager Neo
 
 Modern rebuild of Action Video Manager — a web app for browsing, playing, and bookmarking action camera footage (DJI drones, etc).
 
-## Stack
+# Stack
 
 - **Frontend**: React + TypeScript + Vite, CSS Modules, Lucide icons
 - **Backend**: FastAPI + Python 3.11
