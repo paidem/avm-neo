@@ -1,0 +1,89 @@
+# Production deployment with Google OAuth2 proxy, Redis sessions, and nginx.
+#
+# Usage:
+#   docker compose -f docker-compose.production.yaml up -d
+#
+# ┌──────────────────────────────────────────────────────────────────────┐
+# │ Google OAuth Setup                                                   │
+# │                                                                      │
+# │ 1. Go to https://console.cloud.google.com/apis/credentials          │
+# │ 2. Create an OAuth 2.0 Client ID (type: Web application)            │
+# │ 3. Set Authorized redirect URI to:                                   │
+# │      https://<your-domain>/oauth2/callback                          │
+# │ 4. Copy the Client ID and Client Secret into env vars below         │
+# │ 5. Generate a cookie secret:                                         │
+# │      python3 -c "import os,base64; print(base64.b64encode(os.urandom(32)).decode())" │
+# │ 6. (Optional) To restrict to a Google Workspace domain, set         │
+# │    OAUTH2_PROXY_EMAIL_DOMAINS to your domain (e.g. "company.com")   │
+# │ 7. (Optional) For Google Groups-based access control, create a      │
+# │    service account with domain-wide delegation and download the     │
+# │    JSON key as google.json — mount it and set                       │
+# │    OAUTH2_PROXY_GOOGLE_SERVICE_ACCOUNT_JSON=/google.json            │
+# └──────────────────────────────────────────────────────────────────────┘
+
+services:
+  oauth2-proxy:
+    image: quay.io/oauth2-proxy/oauth2-proxy:v7.7.0
+    restart: always
+    # Uncomment the line below if using Google Groups / service account:
+    # volumes:
+    #   - ./google.json:/google.json:ro
+    environment:
+      OAUTH2_PROXY_CLIENT_ID: "${OAUTH2_CLIENT_ID}"               # from Google Cloud Console
+      OAUTH2_PROXY_CLIENT_SECRET: "${OAUTH2_CLIENT_SECRET}"        # from Google Cloud Console
+      OAUTH2_PROXY_COOKIE_SECRET: "${OAUTH2_COOKIE_SECRET}"        # generate with: python3 -c "import os,base64; print(base64.b64encode(os.urandom(32)).decode())"
+      OAUTH2_PROXY_REDIRECT_URL: "/oauth2/callback"
+      OAUTH2_PROXY_EMAIL_DOMAINS: "*"                              # restrict to "yourdomain.com" for Workspace
+      OAUTH2_PROXY_HTTP_ADDRESS: "0.0.0.0:4180"
+      OAUTH2_PROXY_PROVIDER: "google"
+      OAUTH2_PROXY_SESSION_COOKIE_MINIMAL: "true"                  # avoids >4KB cookie (no Redis needed for oauth2-proxy)
+      OAUTH2_PROXY_SKIP_PROVIDER_BUTTON: "true"
+      OAUTH2_PROXY_SET_XAUTHREQUEST: "true"                        # passes X-Auth-Request-Email header to nginx
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx-oauth.conf:/etc/nginx/nginx.conf:ro
+      - ${MEDIA_DIR:-/media}:/media:ro
+      - thumbnails:/thumbnails:ro
+    depends_on:
+      - app
+      - oauth2-proxy
+    restart: always
+    environment:
+      - TZ=${TZ:-UTC}
+
+  app:
+    image: ghcr.io/${GITHUB_REPOSITORY:-paidem/avm-neo}:latest     # or pin to a version tag
+    volumes:
+      - ${MEDIA_DIR:-/media}:/media
+      - thumbnails:/app/thumbnails
+      - db_data:/app/data
+    depends_on:
+      - redis
+    restart: always
+    environment:
+      - PYTHONUNBUFFERED=1
+      - TZ=${TZ:-UTC}
+      - MEDIA_BASE_DIR=/media
+      - DATABASE_URL=sqlite:///data/avm.db
+      - THUMBNAIL_DIR=/app/thumbnails
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-changeme}
+      - REDIS_HOST=redis
+      - USERNAME_HEADER=X-Email
+      - ADMIN_USERS=${ADMIN_USERS:-}                               # comma-separated emails, e.g. "admin@example.com,user@example.com"
+      - FILTERED_FILES=${FILTERED_FILES:-}                         # comma-separated, leave empty for defaults
+      - HIDDEN_EXTENSIONS=${HIDDEN_EXTENSIONS:-}                   # comma-separated, leave empty for defaults
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+    volumes:
+      - redis_data:/data
+
+volumes:
+  thumbnails:
+  db_data:
+  redis_data:

@@ -1,0 +1,76 @@
+# Synology NAS deployment with Google OAuth2, Redis, and nginx.
+#
+# Assumes media files are on /volume2/footage and app config is at /volume2/footage/avm-neo.
+# Adjust volume paths to match your Synology setup.
+#
+# Usage:
+#   1. Copy .env.example to .env and fill in your values
+#   2. mkdir -p /volume2/footage/avm-neo/{thumbnails,db_data,redis_data}
+#   3. Copy nginx/nginx-oauth.conf to /volume2/footage/avm-neo/nginx-oauth.conf
+#   4. docker compose -f docker-compose.synology.yaml up -d
+#
+# See .env.example and the Google OAuth instructions in docker-compose.production.yaml.
+
+services:
+  oauth2-proxy:
+    image: quay.io/oauth2-proxy/oauth2-proxy:v7.7.0
+    restart: always
+    # Uncomment if using Google Groups / service account:
+    # volumes:
+    #   - /volume2/footage/avm-neo/google.json:/google.json:ro
+    environment:
+      OAUTH2_PROXY_CLIENT_ID: "${OAUTH2_CLIENT_ID}"
+      OAUTH2_PROXY_CLIENT_SECRET: "${OAUTH2_CLIENT_SECRET}"
+      OAUTH2_PROXY_COOKIE_SECRET: "${OAUTH2_COOKIE_SECRET}"
+      OAUTH2_PROXY_REDIRECT_URL: "/oauth2/callback"
+      OAUTH2_PROXY_EMAIL_DOMAINS: "*"
+      OAUTH2_PROXY_HTTP_ADDRESS: "0.0.0.0:4180"
+      OAUTH2_PROXY_PROVIDER: "google"
+      OAUTH2_PROXY_SESSION_COOKIE_MINIMAL: "true"
+      OAUTH2_PROXY_SKIP_PROVIDER_BUTTON: "true"
+      OAUTH2_PROXY_SET_XAUTHREQUEST: "true"
+
+  nginx:
+    image: nginx:alpine
+    labels:
+      com.webstation.type: "python"
+    ports:
+      - "7778:80"
+    volumes:
+      - /volume2/footage/avm-neo/nginx-oauth.conf:/etc/nginx/nginx.conf:ro
+      - /volume2/footage:/media:ro
+      - /volume2/footage/avm-neo/thumbnails:/thumbnails:ro
+    depends_on:
+      - app
+      - oauth2-proxy
+    restart: always
+    environment:
+      - TZ=${TZ:-UTC}
+
+  app:
+    image: ghcr.io/${GITHUB_REPOSITORY:-paidem/avm-neo}:latest
+    volumes:
+      - /volume2/footage:/media
+      - /volume2/footage/avm-neo/thumbnails:/app/thumbnails
+      - /volume2/footage/avm-neo/db_data:/app/data
+    depends_on:
+      - redis
+    restart: always
+    environment:
+      - PYTHONUNBUFFERED=1
+      - TZ=${TZ:-UTC}
+      - MEDIA_BASE_DIR=/media
+      - DATABASE_URL=sqlite:///data/avm.db
+      - THUMBNAIL_DIR=/app/thumbnails
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-changeme}
+      - REDIS_HOST=redis
+      - USERNAME_HEADER=X-Email
+      - ADMIN_USERS=${ADMIN_USERS:-}
+      - FILTERED_FILES=${FILTERED_FILES:-avm-neo,.DS_Store,@eaDir,#snapshot,#recycle,thumbnails}
+      - HIDDEN_EXTENSIONS=${HIDDEN_EXTENSIONS:-source,srt,dng,log,db}
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+    volumes:
+      - /volume2/footage/avm-neo/redis_data:/data

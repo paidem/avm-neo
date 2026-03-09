@@ -14,8 +14,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg wget \
     && rm -rf /var/lib/apt/lists/*
 
-RUN wget -q https://github.com/gyroflow/mp4-merge/releases/download/v0.1.11/mp4_merge-linux64 \
-    -O /usr/local/bin/mp4_merge && chmod +x /usr/local/bin/mp4_merge
+# mp4_merge: download the correct binary for the target architecture
+ARG TARGETARCH
+RUN if [ "$TARGETARCH" = "arm64" ]; then \
+      wget -q https://github.com/gyroflow/mp4-merge/releases/download/v0.1.11/mp4_merge-linux-arm64 \
+        -O /usr/local/bin/mp4_merge; \
+    else \
+      wget -q https://github.com/gyroflow/mp4-merge/releases/download/v0.1.11/mp4_merge-linux64 \
+        -O /usr/local/bin/mp4_merge; \
+    fi && chmod +x /usr/local/bin/mp4_merge
 
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
