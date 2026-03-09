@@ -30,3 +30,4 @@ backend/app/thumbnails/
 # Environment
 .env
 .env.local
+/test-media/
