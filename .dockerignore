@@ -9,3 +9,4 @@ venv
 backend/data
 backend/app/thumbnails
 *.db
+/test-media/
